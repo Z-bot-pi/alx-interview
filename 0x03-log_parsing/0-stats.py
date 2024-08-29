@@ -1,47 +1,58 @@
 #!/usr/bin/python3
 """
-Module that parses a log and prints stats to stdout
+parsing function
 """
-from sys import stdin
+import sys
 
-status_codes = {
-    "200": 0,
-    "301": 0,
-    "400": 0,
-    "401": 0,
-    "403": 0,
-    "404": 0,
-    "405": 0,
-    "500": 0
+
+counters = {
+    "size": 0,
+    "lines": 1
 }
 
-size = 0
+cntCode = {
+    "200": 0, "301": 0, "400": 0, "401": 0,
+    "403": 0, "404": 0, "405": 0, "500": 0
+}
 
 
-def print_stats():
-    """Prints the accumulated logs"""
-    print("File size: {}".format(size))
-    for status in sorted(status_codes.keys()):
-        if status_codes[status]:
-            print("{}: {}".format(status, status_codes[status]))
+def printCodes():
+    """
+    function to print the codes and the number of ocurrence
+    """
+    # print file size
+    print("File size: {}".format(counters["size"]))
+    # print all codes
+    for key in sorted(cntCode.keys()):
+        # if a val is not 0
+        if cntCode[key] != 0:
+            print("{}: {}".format(key, cntCode[key]))
+
+
+def countCodeSize(listData):
+    """
+    count the codes and file size
+    """
+    # count file size
+    counters["size"] += int(listData[-1])
+    # if exists the code
+    if listData[-2] in cntCode:
+        # count status code
+        cntCode[listData[-2]] += 1
+        # line 10 print
 
 
 if __name__ == "__main__":
-    count = 0
     try:
-        for line in stdin:
+        for line in sys.stdin:
             try:
-                items = line.split()
-                size += int(items[-1])
-                if items[-2] in status_codes:
-                    status_codes[items[-2]] += 1
+                countCodeSize(line.split(" "))
             except:
                 pass
-            if count == 9:
-                print_stats()
-                count = -1
-            count += 1
+            if counters["lines"] % 10 == 0:
+                printCodes()
+            counters["lines"] += 1
     except KeyboardInterrupt:
-        print_stats()
+        printCodes()
         raise
-    print_stats()
+    printCodes()
