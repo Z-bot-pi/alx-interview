@@ -1,60 +1,58 @@
-
 #!/usr/bin/python3
+"""
+parsing function
+"""
 import sys
-import re
-from collections import defaultdict
-import signal
-import functools
 
-# Initialize variables
-total_file_size = 0
-status_codes_count = defaultdict(int)
-line_count = 0
-lines_per_print = 10
 
-# Regular expression to match the log line format
-log_pattern = re.compile(
-    r'^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - \[.*?\] "GET /projects/260 HTTP/1.1" (\d{3}) (\d+)$'
-)
+counters = {
+    "size": 0,
+    "lines": 1
+}
 
-def handle_interrupt(signum, frame):
-    print_metrics()
-    sys.exit(0)
+cntCode = {
+    "200": 0, "301": 0, "400": 0, "401": 0,
+    "403": 0, "404": 0, "405": 0, "500": 0
+}
 
-def print_metrics():
-    # Print total file size
-    print(f"File size: {total_file_size}")
-    
-    # Print status codes count
-    for status_code in sorted(status_codes_count.keys()):
-        print(f"{status_code}: {status_codes_count[status_code]}")
 
-def process_line(line):
-    global total_file_size
-    global status_codes_count
-    global line_count
+def printCodes():
+    """
+    function to print the codes and the number of ocurrence
+    """
+    # print file size
+    print("File size: {}".format(counters["size"]))
+    # print all codes
+    for key in sorted(cntCode.keys()):
+        # if a val is not 0
+        if cntCode[key] != 0:
+            print("{}: {}".format(key, cntCode[key]))
 
-    match = log_pattern.match(line)
-    if match:
-        ip, status_code, file_size = match.groups()
-        file_size = int(file_size)
-        status_code = int(status_code)
-        
-        # Update metrics
-        total_file_size += file_size
-        status_codes_count[status_code] += 1
-        line_count += 1
 
-        # Print metrics if the line count is a multiple of lines_per_print
-        if line_count % lines_per_print == 0:
-            print_metrics()
+def countCodeSize(listData):
+    """
+    count the codes and file size
+    """
+    # count file size
+    counters["size"] += int(listData[-1])
+    # if exists the code
+    if listData[-2] in cntCode:
+        # count status code
+        cntCode[listData[-2]] += 1
+        # line 10 print
 
-# Set up signal handler for keyboard interruption
-signal.signal(signal.SIGINT, handle_interrupt)
 
-# Read from stdin line by line
-for line in sys.stdin:
-    process_line(line)
-
-# Final metrics print after reading all lines
-print_metrics()
+if __name__ == "__main__":
+    try:
+        for line in sys.stdin:
+            try:
+                countCodeSize(line.split(" "))
+            except:
+                pass
+            if counters["lines"] % 10 == 0:
+                printCodes()
+            counters["lines"] += 1
+    except KeyboardInterrupt:
+        printCodes()
+        raise
+    printCodes()
