@@ -1,58 +1,51 @@
 #!/usr/bin/python3
-"""
-parsing function
-"""
 import sys
 
+# Initialize variables to store total file size and status code counts
+total_file_size = 0
+status_codes = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
+line_count = 0
 
-counters = {
-    "size": 0,
-    "lines": 1
-}
+def print_stats():
+    """Prints the current statistics of file size and status codes."""
+    print(f"File size: {total_file_size}")
+    for code in sorted(status_codes.keys()):
+        if status_codes[code] > 0:
+            print(f"{code}: {status_codes[code]}")
 
-cntCode = {
-    "200": 0, "301": 0, "400": 0, "401": 0,
-    "403": 0, "404": 0, "405": 0, "500": 0
-}
+try:
+    # Read from standard input line by line
+    for line in sys.stdin:
+        line = line.strip()
+        parts = line.split()
+        
+        # Check if line has the correct number of elements
+        if len(parts) < 7:
+            continue
+        
+        try:
+            # Extract status code and file size
+            status_code = int(parts[-2])
+            file_size = int(parts[-1])
 
+            # Update total file size
+            total_file_size += file_size
+            
+            # Update status code count if it is one of the expected codes
+            if status_code in status_codes:
+                status_codes[status_code] += 1
 
-def printCodes():
-    """
-    function to print the codes and the number of ocurrence
-    """
-    # print file size
-    print("File size: {}".format(counters["size"]))
-    # print all codes
-    for key in sorted(cntCode.keys()):
-        # if a val is not 0
-        if cntCode[key] != 0:
-            print("{}: {}".format(key, cntCode[key]))
+        except (ValueError, IndexError):
+            # Skip lines that don't have the correct format
+            continue
 
+        line_count += 1
 
-def countCodeSize(listData):
-    """
-    count the codes and file size
-    """
-    # count file size
-    counters["size"] += int(listData[-1])
-    # if exists the code
-    if listData[-2] in cntCode:
-        # count status code
-        cntCode[listData[-2]] += 1
-        # line 10 print
+        # Print stats every 10 lines
+        if line_count % 10 == 0:
+            print_stats()
 
-
-if __name__ == "__main__":
-    try:
-        for line in sys.stdin:
-            try:
-                countCodeSize(line.split(" "))
-            except:
-                pass
-            if counters["lines"] % 10 == 0:
-                printCodes()
-            counters["lines"] += 1
-    except KeyboardInterrupt:
-        printCodes()
-        raise
-    printCodes()
+except KeyboardInterrupt:
+    # Print stats on keyboard interruption (CTRL + C)
+    print_stats()
+    raise
