@@ -1,51 +1,47 @@
 #!/usr/bin/python3
-import sys
+"""
+Module that parses a log and prints stats to stdout
+"""
+from sys import stdin
 
-# Initialize variables to store total file size and status code counts
-total_file_size = 0
-status_codes = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
-line_count = 0
+status_codes = {
+    "200": 0,
+    "301": 0,
+    "400": 0,
+    "401": 0,
+    "403": 0,
+    "404": 0,
+    "405": 0,
+    "500": 0
+}
+
+size = 0
+
 
 def print_stats():
-    """Prints the current statistics of file size and status codes."""
-    print(f"File size: {total_file_size}")
-    for code in sorted(status_codes.keys()):
-        if status_codes[code] > 0:
-            print(f"{code}: {status_codes[code]}")
+    """Prints the accumulated logs"""
+    print("File size: {}".format(size))
+    for status in sorted(status_codes.keys()):
+        if status_codes[status]:
+            print("{}: {}".format(status, status_codes[status]))
 
-try:
-    # Read from standard input line by line
-    for line in sys.stdin:
-        line = line.strip()
-        parts = line.split()
-        
-        # Check if line has the correct number of elements
-        if len(parts) < 7:
-            continue
-        
-        try:
-            # Extract status code and file size
-            status_code = int(parts[-2])
-            file_size = int(parts[-1])
 
-            # Update total file size
-            total_file_size += file_size
-            
-            # Update status code count if it is one of the expected codes
-            if status_code in status_codes:
-                status_codes[status_code] += 1
-
-        except (ValueError, IndexError):
-            # Skip lines that don't have the correct format
-            continue
-
-        line_count += 1
-
-        # Print stats every 10 lines
-        if line_count % 10 == 0:
-            print_stats()
-
-except KeyboardInterrupt:
-    # Print stats on keyboard interruption (CTRL + C)
+if __name__ == "__main__":
+    count = 0
+    try:
+        for line in stdin:
+            try:
+                items = line.split()
+                size += int(items[-1])
+                if items[-2] in status_codes:
+                    status_codes[items[-2]] += 1
+            except:
+                pass
+            if count == 9:
+                print_stats()
+                count = -1
+            count += 1
+    except KeyboardInterrupt:
+        print_stats()
+        raise
     print_stats()
-    raise
