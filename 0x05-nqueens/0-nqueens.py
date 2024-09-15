@@ -10,7 +10,7 @@ if __name__ == "__main__":
         exit(1)
     try:
         n = int(argv[1])
-    except BaseException:
+    except ValueError:
         print('N must be a number')
         exit(1)
     if n < 4:
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     solution = []
 
     def solve_queens(row, n, solution):
-        if (row == n):
+        if row == n:
             print(solution)
         else:
             for col in range(n):
@@ -28,14 +28,17 @@ if __name__ == "__main__":
                 if valid_placement(solution, placement):
                     solution.append(placement)
                     solve_queens(row + 1, n, solution)
-                    solution.remove(placement)
+                    solution.pop()  # Undo last move
 
     def valid_placement(solution, placement):
         for queen in solution:
+            # Check if same column
             if queen[1] == placement[1]:
                 return False
+            # Check if same major diagonal
             if (queen[0] + queen[1]) == (placement[0] + placement[1]):
                 return False
+            # Check if same minor diagonal
             if (queen[0] - queen[1]) == (placement[0] - placement[1]):
                 return False
         return True
