@@ -1,23 +1,19 @@
 #!/usr/bin/python3
 """
-Island Perimeter
+    Module that calculates the perimeter of an island in a grid
 """
 
 
 def island_perimeter(grid):
-    """
-    island_perimeter
-    """
-    _sum, limit = (0, 0)
-    len_grid, len_col = (len(grid), len(grid[0]))
+    """Function that calculates the perimeter of an island in a grid"""
+    result = 0
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            if grid[i][j] == 1:
+                result += 4
+                if i - 1 >= 0 and grid[i - 1][j] == 1:
+                    result -= 2
+                if j - 1 >= 0 and grid[i][j - 1] == 1:
+                    result -= 2
 
-    for col in range(len_grid):
-        _sum += sum(grid[col])
-        for row in range(len_col):
-            if grid[col][row]:
-                if row > 0 and grid[col][row - 1] == 1:
-                    limit += 1
-
-                if col > 0 and grid[col - 1][row] == 1:
-                    limit += 1
-    return _sum * 4 - limit * 2
+    return result
